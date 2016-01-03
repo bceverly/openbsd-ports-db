@@ -1,43 +1,45 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdlib.h>
 #include <sqlite3.h>
 
 void removeVersion(char *filename)
 {
-	int i;
-	char *ptr;
+	int foundDash = 0;
 
-	i = strlen(filename);
-	ptr = filename + i - 1 - 4;
-
-	while (ptr > filename)
+	while (*filename != '\0')
 	{
-		if ((*ptr != '0') &&
-			(*ptr != '1') &&
-			(*ptr != '2') &&
-			(*ptr != '3') &&
-			(*ptr != '4') &&
-			(*ptr != '5') &&
-			(*ptr != '6') &&
-			(*ptr != '7') &&
-			(*ptr != '8') &&
-			(*ptr != '9') &&
-			(*ptr != 'p') &&
-			(*ptr != '.') &&
-			(*ptr != '-') &&
-			(*ptr != '.'))
+		if ((!isalpha(*filename)) && (*filename != '-'))
 		{
-			*(ptr + 1) = '\0';
-			return;
+			if (foundDash == 1)
+			{
+				*filename = '\0';
+				if (*(filename-1) == '-')
+				{
+					*(filename-1) = '\0';
+				}
+				return;
+			}
 		}
-		ptr--;
+
+		if (*filename == '-')
+		{
+			foundDash = 1;
+		}
+
+		filename++;
 	}
 }
 
 static int process_row(void *NotUsed, int argc, char **argv, char **azColName)
 {
-	removeVersion(argv[0]);
-	printf("%s\n", argv[0]);
+	char *stripped;
+	stripped = (char *)malloc(2048);
+	strlcpy(stripped, argv[0], 2048);
+	removeVersion(stripped);
+	printf("update ports set port_name='%s' where port_name='%s';\n", stripped, argv[0]);
+	free(stripped);
+
 	return(0);
 }
 
@@ -55,7 +57,7 @@ int main(int argc, char **argv)
 		return(1);
 	}
 
-	rc = sqlite3_exec(db, "select port_name from ports where processor='amd64'order by port_name;", process_row, 0, &zErrMsg);
+	rc = sqlite3_exec(db, "select port_name from ports order by port_name;", process_row, 0, &zErrMsg);
 	if (rc!=SQLITE_OK)
 	{
 		fprintf(stderr, "SQL error: %s\n", zErrMsg);

@@ -74,10 +74,10 @@ rm file.txt file2.txt file3.txt >/dev/null 2>&1
 # clean up the data
 sqlite3 ports.db 'update ports set port_name=substr(port_name, length(port_name)/2);'
 sqlite3 ports.db 'update ports set port_name=substr(port_name,3);'
-sqlite3 ports.db 'delete from ports where port_name like '%gt;%';'
-sqlite3 ports.db 'delete from ports where port_name like '%lt;%';'
-sqlite3 ports.db 'delete from ports where port_name like '%SHA256%';'
-sqlite3 ports.db 'delete from ports where port_name like '%..%';'
+sqlite3 ports.db "delete from ports where port_name like '%gt;%';"
+sqlite3 ports.db "delete from ports where port_name like '%lt;%';"
+sqlite3 ports.db "delete from ports where port_name like '%SHA256%';"
+sqlite3 ports.db "delete from ports where port_name like '%..%';"
 
 echo 'Generating master list of all ports...'
 sqlite3 ports.db 'select port_name from ports where processor="amd64" order by port_name;' > all-ports.txt
