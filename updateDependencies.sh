@@ -7,5 +7,6 @@ while read line
 done <all-ports.txt
 
 ./removeVersions >fixit.txt
-sqlite3 ports.db -init fixit.txt '.quit'
-rm fixit.txt
+sort -u fixit.txt > fixit2.txt
+sqlite3 ports.db -init fixit2.txt '.quit'
+rm fixit.txt fixit2.txt
